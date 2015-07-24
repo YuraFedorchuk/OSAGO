@@ -1,0 +1,82 @@
+#OSAGO-container {
+	font-family: Impact;
+}
+
+#OSAGO-container select {
+	padding: 3px;
+	margin-top: 3px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	-webkit-box-shadow: 0 1px 0 #ccc, 0 -1px #fff inset;
+	-moz-box-shadow: 0 1px 0 #ccc, 0 -1px #fff inset;
+	box-shadow: 0 1px 0 #ccc, 0 -1px #fff inset;
+	background: #f8f8f8;
+	color: #888;
+	border: none;
+	outline: none;
+	display: inline-block;
+	cursor: pointer;
+}
+
+#OSAGO-container .item {
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 12px;
+}
+
+#OSAGO-container .inner-container > *{
+	float: left;
+	margin-right: 10px;
+}
+
+#OSAGO-container input[type=submit],
+#OSAGO-container button {
+	font-family: impact;
+	font-size: 30px;
+	padding: 5px 13px 5px 13px;
+	margin-top: 3px;
+	border: none;
+	color: white;
+	background-color: black;
+	-webkit-transition: 0.3s;
+	-moz-transition: 0.3s;
+	-o-transition: 0.3s;
+	transition: 0.3s;
+}
+
+#OSAGO-container input[type=submit]:hover,
+#OSAGO-container button:hover	{
+	background: orange;
+	color: black;
+	cursor: pointer;
+	-webkit-transition: 0.3s;
+	 -moz-transition: 0.3s;
+	 -o-transition: 0.3s;
+	 transition: 0.3s;
+}
+
+#OSAGO-container .border {
+	clear: both;
+}
+
+#OSAGO-container #OSAGO-res {
+	width: 400px;
+	height: 80px;
+	font-size: 40px;
+	text-align: center;
+	line-height: 80px;
+	background: #eee;
+	box-shadow: 0 0 4px black;
+	-webkit-box-shadow: 0 0 4px black;
+	-moz-box-shadow: 0 0 4px black;
+	-o-box-shadow: 0 0 4px black;
+	margin-bottom: 10px;
+}
+
+#OSAGO-calc-opt {
+	display: none;
+}
+
+.hide {
+	display: none;
+}

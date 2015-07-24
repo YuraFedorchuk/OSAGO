@@ -1,0 +1,291 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+	<script>
+		$( function() {
+			/* База данных коэффициентов */
+			cffs = {
+				"transport": {			// Вид автотранспорта:
+						"la": 1980,			// Легковой автомобиль
+						"ta": 2965,			// Такси (маршрутки и автобусы)
+						"gal_16": 2025,		// Грузовые авто массой 16т. и менее
+						"gab_16": 3240,		// Грузовые авто массой более 16т.
+						"busl_20": 1620,	// Автобусы с числом мест до 20 включительно
+						"busb_20": 2025,	// Автобусы с числом мест более 20
+						"tsdsm": 1215,		// Тракторы самоходные, дорожно-строительные машины
+						"moto": 1215,		// Мотоциклы и мотороллеры
+						"prgr": 810,		// Прицепы к грузовым ТС
+						"prtr": 305			// Прицепы к тракторам, самоходным, дорожно стоительным машинам
+					},
+				"power": {				// Мощность (л.с.):
+					"l_50": 0.6,			// до 50
+					"50_b_70": 1,			// свыше 50 до 70 включительно
+					"70_b_100": 1.1,		// свыше 70 до 100 включительно
+					"100_b_120": 1.2,		// свыше 100 до 120 включительно
+					"120_b_150": 1.4,		// свыше 120 до 150 включительно
+					"b_150": 1.6			// свыше 150
+				},
+				"territory": {			// Территория использования:
+					"msc": 2,				// Москва
+					"msco": 1.7				// Московская область
+				},
+				"term": {				// Срок страхования:
+					"12_m": 1,				// 12 мес.
+					"9_m": 0.95,			// 9 мес.
+					"7_m": 0.8,				// 7 мес.
+					"6_m": 0.7,				// 6 мес.
+					"5_m": 0.65,			// 5 мес.
+					"4_m": 0.6,				// 4 мес.
+					"3_m": 0.5				// 3 мес.
+				},
+				"drivers": {			// Список водителей:
+					"ogr": 1,				// Ограниченный
+					"nogr": 1.8				// Неограниченный
+				},
+				"age_&_experience": {	// Возраст и стаж водителя транспортного средства:
+					"l_22_l_3": 1.8,		// до 22 лет включительно со стажем вождения до 3 лет включительно
+					"l_22_b_3": 1.6,		// более 22 лет со стажем вождения до 3 лет включительно
+					"b_22_l_3": 1.7,		// до 22 лет включительно со стажем вождения свыше 3 лет
+					"b_22_b_3": 1			// более 22 лет со стажем вождения свыше 3 лет
+				},
+				
+				/* Дополнительные опции */
+				
+				"extension": {			// Добровольное расширение полиса ОСАГО:
+					"none": 0,				// нет
+					"l_500": 0,				// до 500 тыс. руб.
+					"l_1_mln": 0,			// до 1 млн. руб.
+					"l_1_5_mln": 0			// до 1,5 млн.руб.
+				},
+				"health": {				// Здоровье водителя и пассажиров:
+					"none": 0,				// нет
+					"100_t": 0,				// 100 тыс.руб.
+					"300_t": 0				// 300 тыс.руб.
+				},
+				"card": {				// Диагностическая карта технического осмотра:
+					"no": 0,				// нет
+					"yes": 0				// да
+				}
+			};
+			
+			$("#OSAGO-calc").submit( function( event ) {
+					
+				// Базовый тариф
+				var BT_arr = $("#OSAGO-calc #trans-tp option:selected").val();
+				var BT = cffs["transport"][BT_arr];
+				
+				// Коэффициент мощности 
+				var CP_arr = $("#OSAGO-calc #pwr option:selected").val();
+				var CP = cffs["power"][CP_arr];
+				
+				// Коэффициент территории
+				var CT_arr = $("#OSAGO-calc #terr option:selected").val();
+				var CT = cffs["territory"][CT_arr];
+				
+				if ( BT == 305 || BT == 1215 ) {
+					if ( CT == 2 ) {
+						CT = 1.2;
+					} else {
+						CT = 1;
+					}
+				}
+				
+				// Коэффициент срока страхования
+				var CTI_arr = $("#OSAGO-calc #term option:selected").val();
+				var CTI = cffs["term"][CTI_arr];
+				
+				// Коффициент количества водителей
+				var DN_arr = $("#OSAGO-calc input[name='drvr-list']:checked" ).val();
+				var DN = cffs["drivers"][DN_arr];
+				
+				// Коэффициент стажа и возраста
+				var CEA = cffs["age_&_experience"]["b_22_l_3"];  // по умолчанию больше 22 и стаж меньше 3
+				
+				var age = parseFloat( $("#OSAGO-calc input[name='drvr-age']:checked" ).val() );
+				var exp = parseFloat( $("#OSAGO-calc input[name='drvr-exp']:checked" ).val() );
+				
+				
+				if ( age*exp == 1 ) CEA = cffs["age_&_experience"]["b_22_b_3"];
+				if ( age == 0 && exp == 0 ) CEA = cffs["age_&_experience"]["l_22_l_3"];
+				if ( age == 0 && exp == 1 ) CEA = cffs["age_&_experience"]["l_22_b_3"];
+				
+				
+				// Результат
+				result = (BT * CP * CT * CTI * DN * CEA).toFixed(2);
+				
+				
+				$("#OSAGO-calc").hide("slow");
+				$("#OSAGO-calc-opt").show("slow");
+			
+				$("#OSAGO-calc-opt #OSAGO-res").empty().append( "Итог: <span style='color: orange'>" + result + "</span>" );
+				
+				event.preventDefault();
+			});
+			
+			
+			$("#OSAGO-calc-opt").submit( function( event ) {
+				
+				// Добровольное расширение полиса ОСАГО:
+				var CE_arr = $("#OSAGO-calc-opt #ext option:selected").val();
+				var CE = cffs["extension"][CE_arr];
+				
+				// Здоровье водителя и пассажиров:
+				var CH_arr = $("#OSAGO-calc-opt #hlth option:selected").val();
+				var CH = cffs["health"][CH_arr];
+				
+				// Диагностическая карта технического осмотра:
+				var CC_arr = $("#OSAGO-calc-opt #card option:selected").val();
+				var CC = cffs["card"][CC_arr];
+				
+				result_opt = (parseFloat(result) + CE + CH + CC).toFixed(2);
+				
+				$("#OSAGO-calc-opt #OSAGO-res")
+				.empty()
+				.hide()
+				.append( "Итог: <span style='color: orange'>" + result_opt + "</span>" )
+				.show("slow");
+				
+				event.preventDefault();
+			});
+			
+			
+			$("#OSAGO-calc-opt button").click( function( event ) {
+				$("#OSAGO-calc-opt").hide("slow");
+				$("#OSAGO-calc").show("slow");
+				
+				event.preventDefault();
+			});
+		});
+	</script>
+	<style>
+		#OSAGO-container{font-family:Impact}#OSAGO-container select{padding:3px;margin-top:3px;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;-webkit-box-shadow:0 1px 0 #ccc,0 -1px #fff inset;-moz-box-shadow:0 1px 0 #ccc,0 -1px #fff inset;box-shadow:0 1px 0 #ccc,0 -1px #fff inset;background:#f8f8f8;color:#888;border:none;outline:none;display:inline-block;cursor:pointer}#OSAGO-container .item{font-family:Verdana,Geneva,sans-serif;font-size:12px}#OSAGO-container .inner-container > *{float:left;margin-right:10px}#OSAGO-container input[type=submit],#OSAGO-container button{font-family:impact;font-size:30px;padding:5px 13px;margin-top:3px;border:none;color:#fff;background-color:#000;-webkit-transition:.3s;-moz-transition:.3s;-o-transition:.3s;transition:.3s}#OSAGO-container input[type=submit]:hover,#OSAGO-container button:hover{background:orange;color:#000;cursor:pointer;-webkit-transition:.3s;-moz-transition:.3s;-o-transition:.3s;transition:.3s}#OSAGO-container .border{clear:both}#OSAGO-container #OSAGO-res{width:400px;height:80px;font-size:40px;text-align:center;line-height:80px;background:#eee;box-shadow:0 0 4px #000;-webkit-box-shadow:0 0 4px #000;-moz-box-shadow:0 0 4px #000;-o-box-shadow:0 0 4px #000;margin-bottom:10px}#OSAGO-calc-opt{display:none}.hide{display:none}
+	</style>
+</head>
+<body>
+	<div id="OSAGO-container">
+		<form id="OSAGO-calc" method="POST">
+			<div>			
+				Вид автотранспорта:<br />
+				<select id="trans-tp">
+					<option value="la">Легковой автомобиль</option>
+					<option value="ta">Такси (маршрутки и автобусы)</option>
+					<option value="gal_16">Грузовые авто массой 16т. и менее</option>
+					<option value="gab_16">Грузовые авто массой более 16т.</option>
+					<option value="busl_20">Автобусы с числом мест до 20 включительно</option>
+					<option value="busb_20">Автобусы с числом мест более 20</option>
+					<option value="tsdsm">Тракторы самоходные, дорожно-строительные машины</option>
+					<option value="moto">Мотоциклы и мотороллеры</option>
+					<option value="prgr">Прицепы к грузовым ТС</option>
+					<option value="prtr">Прицепы к тракторам, самоходным, дорожно стоительным машинам</option>
+				</select>
+			</div>
+			
+			<br />
+			
+			<div class="inner-container">
+				<div>
+					Мощность<br /> (л.с.):<br />
+					<select id="pwr">
+						<option value="l_50">до 50</option>
+						<option value="50_b_70">свыше 50 до 70 включительно</option>
+						<option value="70_b_100">свыше 70 до 100 включительно</option>
+						<option value="100_b_120" selected>свыше 100 до 120 включительно</option>
+						<option value="120_b_150">свыше 120 до 150 включительно</option>
+						<option value="b_150">свыше 150</option>
+					</select>
+				</div>
+				
+				<div>
+					Территория<br /> использования:<br />
+					<select id="terr">
+						<option value="msc">Москва</option>
+						<option value="msco">Московская область</option>
+					</select>
+				</div>
+				
+				<div>
+					Срок<br /> страхования:<br />
+					<select id="term">				
+						<option value="12_m">12 мес.</option>
+						<option value="9_m">9 мес.</option>
+						<option value="7_m">7 мес.</option>
+						<option value="6_m">6 мес.</option>
+						<option value="5_m">5 мес.</option>
+						<option value="4_m">4 мес.</option>
+						<option value="3_m">3 мес.</option>
+					</select>
+				</div>
+				
+			</div>
+			
+			<div class="border"></div>
+			<br />
+			
+			<div class="inner-container">
+				<div>
+					Список<br /> водителей:<br />
+					<input type="radio" name="drvr-list" value="ogr" checked /><span class="item">Ограниченный</span><br />
+					<input type="radio" name="drvr-list" value="nogr" /><span class="item">Неограниченный</span>
+				</div>
+				
+				<div>
+					Возраст младшего<br /> из водителей:<br />
+					<input type="radio" name="drvr-age" value="0" checked /><span class="item">до 22 лет включительно</span><br />
+					<input type="radio" name="drvr-age" value="1" /><span class="item">более 22 лет</span>
+				</div>
+				
+				<div>
+					Минимальный стаж<br /> водителей:<br />
+					<input type="radio" name="drvr-exp" value="0" checked /><span class="item">до 3-х лет включительно</span><br />
+					<input type="radio" name="drvr-exp" value="1" /><span class="item">более 3 лет</span>
+				</div>
+			</div>
+			
+			<div class="border"></div>
+			<br />
+			
+			<input type="submit" value="РАССЧИТАТЬ">
+		</form>
+			
+			
+			
+		<form id="OSAGO-calc-opt" method="POST">
+				<div id="OSAGO-res"></div>
+				<div>
+					Добровольное расширение полиса ОСАГО:<br />
+					<select id="ext">
+						<option value="none">нет</option>
+						<option value="l_500">до 500 тыс. руб.</option>
+						<option value="l_1_mln">до 1 млн. руб.</option>
+						<option value="l_1_5_mln">до 1,5 млн.руб.</option>
+					</select>
+				</div>
+				<br />
+				<div>
+					Здоровье водителя и пассажиров:<br />
+					<select id="hlth">
+						<option value="none">нет</option>
+						<option value="100_t">100 тыс.руб.</option>
+						<option value="300_t">300 тыс.руб.</option>
+					</select>
+				</div>
+				<br />
+				<div>
+					Диагностическая карта технического осмотра:<br />
+					<select id="card">
+						<option value="no">нет</option>
+						<option value="yes">да</option>
+					</select>
+				</div>
+				<br />
+				
+				<input type="submit" value="РАССЧИТАТЬ С УЧЕТОМ ПОПРАВОК" /><br />
+				<button>ВЕРНУТЬСЯ</button>
+		</form>
+			
+	</div>
+
+</body>
+</html>
